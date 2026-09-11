@@ -1,0 +1,25 @@
+# Structured Joint v14 source audit
+
+The historical source corresponding to main0018.pdf is preserved in v22_analysis/reports/main0018_baseline.tex and main0018_appendix_baseline.tex. The original paper project was not edited.
+
+| Location | Current historical claim or value | Old data source | Generator script | Old checkpoint | Required v22 source | Action |
+|---|---|---|---|---|---|---|
+| Abstract, baseline lines 35 | Structured Joint Overall 60.13; paired gain +1.07 plus or minus 0.30 | Historical main0018 source; old underlying aggregate file was not identified | No generator identified | bb26_claim_compagg_v14_syn256_para128_early018_synp050_repr025, seeds 0/1/42, chck_100M | v22-s0 main results CSV and official result files | Replaced by Relay Joint 40.94 and +1.25; removed SD and all-seed claim |
+| Introduction and contributions, lines 104-116 | Structured Joint, routing plus Entity Anchor, controlled integration ablations | Historical main0018 source and saved v14 implementation description | None | v14 family above | v22-s0 run_cmd.sh, claim_manifest.txt, train_code.py | Rewritten as Relay Joint with saved relay schedule |
+| Method, lines 308-367 | Structured Joint integration and diagnostic ablations | Historical main0018 source; main0018 appendix Tables 6-8 | None | v14 family and old diagnostic model families | Exact v22-s0 saved code and arguments | Replaced by v22 fixed slices, relay onset, Syn retention, and temporary entity anchor; old diagnostics removed |
+| Main results, lines 428-479 | Overall 59.06, 59.83, 59.66, 60.13 under ZS5/FT7 formula | Historical main0018 table; old underlying CSV not located | No table generator identified | Standard, Syntagmatic, Paradigmatic, v14 Structured Joint seeds 0/1/42 | eval_results_summary_new_pipeline.md s0 rows plus official result directories | Rebuilt as the four-row nine-metric seed-0 tables |
+| Diagnostic results, lines 486-511 | Delayed, simultaneous, routing-only, anchor-only, routing-plus-anchor | Historical main0018 Table 4 and corresponding old evaluation directories | No table generator identified | Old diagnostic families; not v22 Relay | No like-for-like v22 ablations exist | Deleted rather than relabeled |
+| Figure 2, lines 516-523 | Three-seed curves containing v14 Structured Joint | babylm-eval/strict/results checkpoint trajectories | /home/yangyuwei/babylm/2026/EMNLP2026/figure/code/plot_figure2_reading_aoa.py | v14 Structured Joint seeds 0/1/42 | Four exact s0 model result trajectories, including v22 Relay | Script copied and adapted; new CSV/PDF/PNG generated |
+| Figure 3, lines 552-583 | Contextual alignment plot containing v14 Structured Joint and old slice claims | Old Paradigmatic probe CSVs | /home/yangyuwei/babylm/2026/AMLM/报告/plot_contextual_alignment_slices.py; upstream analyze_paradigmatic_equal_slice_specificity.py and analyze_paradigmatic_alignment_all_seeds.py | v14 Structured Joint seeds 0/1/42, chck_100M | Exact four seed-0 100M checkpoints with v22 Relay | Scripts copied and adapted; probes rerun; new CSV/PDF/PNG generated |
+| Syntagmatic diagnostics, baseline lines 589-636 | Rows for Standard, Syntagmatic, and old Structured Joint | Historical probe outputs in main0018 appendix | Prior UD/context-removal pilot scripts | v14 Structured Joint plus single-module runs | No v22 Relay UD probe exists | Removed the old Joint row; retained only the separately identified Standard/Syntagmatic three-seed module analysis |
+| Discussion, limitations, conclusion, lines 649-682 | v14 gain explained by routing plus anchor; all seeds improve | Historical main0018 prose based on old table and ablations | None | v14 and diagnostic families | v22-s0 table and v22-s0 probe | Rewritten without significance, consistency, or general synergy claims |
+| Appendix Table 6 | Old Structured Joint schedule and routing/anchor settings | main0018_appendix_baseline.tex | None | v14 family | v22-s0 saved arguments | Replaced with exact Relay schedule |
+| Appendix Table 7 | Six old diagnostic configurations | main0018_appendix_baseline.tex | None | old ablation families | No v22 equivalents | Deleted |
+| Appendix Table 8 | Structured Joint token eligibility | main0018 appendix and v14 code | None | v14 family | v22-s0 code and gold-token lookup | Renamed/rechecked for Relay objectives and anchor |
+| Appendix probe tables | Old Structured Joint probe rows | main0018 appendix tables | Old probe outputs | v14 family | v22-s0 Figure 3 CSVs | Old rows deleted; true v22-s0 values added |
+
+## Unresolved historical provenance
+
+The exact CSV or aggregation script that produced the main0018 internal Overall values 59.06, 59.83, 59.66, and 60.13 was not located in the copied materials. Those values are traceable to the frozen historical TeX but not to an identified raw result artifact. They are therefore removed, not renamed or reused.
+
+The old diagnostic-ablation table has no v22 Relay counterpart. It is removed and is not presented as evidence for the formal v22 checkpoint.

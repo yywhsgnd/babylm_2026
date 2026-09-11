@@ -1,0 +1,229 @@
+\appendix
+
+\section{Training Configurations}
+\label{app:training-config}
+
+Table~\ref{tab:primary-config} gives the relational settings saved
+with the four seed-0 checkpoints. Onset is the fraction of completed
+optimization steps. Standard MLM prediction always uses the complete
+384-dimensional state. The two single-target systems also apply their
+relational loss to the complete state; only Relay Joint uses fixed
+coordinate slices.
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{@{}p{0.13\textwidth}p{0.15\textwidth}p{0.17\textwidth}p{0.17\textwidth}p{0.18\textwidth}p{0.12\textwidth}@{}}
+\toprule
+Method & Syn onset / weight & Para syntax onset / weight & Para content onset / weight & Relational rep. & Entity anchor \\
+\midrule
+Standard MLM & Off & Off & Off & -- & Off \\
+Syntagmatic & $0.0920386562$ / $5\!\times\!10^{-4}$ & Off & Off & Full 384 & Off \\
+Paradigmatic & Off & $0.5522310170$ / $5\!\times\!10^{-5}$ & $0.99$ / $10^{-6}$ & Full 384 & Off \\
+Relay Joint & $0.0920386562$ / $5\!\times\!10^{-4}$ & $0.1840773125$ / $5\!\times\!10^{-5}$ & $0.99$ / $10^{-6}$ & Syn 0--255; Para 256--383 & $\approx9.2\%$--$60\%$ / $2.5\!\times\!10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\caption{Saved relational configurations. After Relay Joint activates
+syntax Paradigmatic supervision, its Syntagmatic weight at eligible
+syntax positions is retained at 10\% of the earlier value.}
+\label{tab:primary-config}
+\end{table}
+
+Both targets use $K=8$ and temperature 1.0. Syntagmatic takes
+attention from the last layer. Paradigmatic has zero weight for entity
+and reading-sensitive categories and no post-onset ramp. Relay Joint
+does not enable a content projection or learned router. Its routing is
+a fixed coordinate selection, and its anchor has no trainable
+parameters. The total parameter count is 34,677,952 for every system.
+
+\begin{table}[H]
+\centering
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{0.20\textwidth}p{0.72\textwidth}}
+\toprule
+Objective & Eligible MLM-selected positions \\
+\midrule
+Syntagmatic & Gold-token category is syntax, reading, or content. Entity and invalid tokens are excluded. \\
+Paradigmatic, syntax & Gold token matches the fixed syntax list. It begins at progress $0.5522310170$ in Paradigmatic and $0.1840773125$ in Relay Joint, with weight $5\times10^{-5}$. \\
+Paradigmatic, content & Gold token is classified as content; active after progress $0.99$ with weight $10^{-6}$. Entity and reading categories receive zero Paradigmatic weight. \\
+Entity anchor & Relay Joint only: gold token is classified as entity; active from progress $0.0920386562$ through $0.60$ with weight $2.5\times10^{-4}$. \\
+\bottomrule
+\end{tabular}
+\caption{Eligibility for the relational objectives and Relay Joint
+entity anchor. Categories are fixed gold-token ID lookup tables
+constructed from the tokenizer vocabulary before training.}
+\label{tab:token-eligibility}
+\end{table}
+
+\paragraph{Vocabulary-derived token categories.}
+No POS tagger or NER system is used. The tokenizer vocabulary is
+scanned once before training. One recognized leading SentencePiece,
+byte-level BPE, WordPiece, or space marker is removed; trailing
+punctuation is stripped; and fixed-list matching is case-insensitive.
+Byte tokens and entries with no alphabetic character are invalid.
+The lookup then assigns the first matching category in this order:
+syntax, reading-sensitive, entity, and content. Thus the categories are
+mutually exclusive even when lexical lists overlap. An entity is a
+remaining entry containing a digit, or an alphabetic entry of at least
+three characters that begins with an uppercase letter. Remaining
+alphabetic entries are content tokens.
+
+\paragraph{Fixed lexical lists.}
+\textbf{Auxiliaries:} is, are, was, were, be, been, being, am, do, does,
+did, have, has, had, can, could, will, would, should, may, might, must,
+shall, ought, need, dare, used.
+\textbf{Determiners:} a, an, the, this, that, these, those, some, any,
+all, each, every, many, few, no, much, more, most, several, both,
+either, neither, such, what.
+\textbf{Pronouns:} he, she, it, they, him, her, them, his, their, its,
+we, us, our, you, your, i, me, my, myself, yourself, himself, herself,
+itself, ourselves, themselves, one, ones.
+\textbf{Negation:} not, n\textquotesingle t, never, no, nor, neither.
+\textbf{Prepositions:} in, on, at, by, with, from, to, of, for, into,
+onto, over, under, near, about, between, through, during, without,
+within, along, across, behind, beyond, toward, towards, upon, among,
+amongst, beside, besides, against, around, before, after, above, below,
+off, up, down, out.
+\textbf{Conjunctions:} and, or, but, because, although, if, when, while,
+before, after, since, until, unless, whereas, so, yet, than, as, though,
+whether, once, till, lest, except, provided, given, suppose, assuming,
+whenever, wherever.
+\textbf{Wh-words:} who, whom, whose, which, where, why, how, what,
+whatever, whichever, whoever, however, wherever.
+\textbf{Comparatives:} more, less, fewer, better, worse, bigger,
+smaller, higher, lower, longer, shorter, older, younger.
+\textbf{Temporal expressions:} now, then, ago, later, earlier, soon,
+already, still, yet, finally, eventually, previously, formerly,
+currently, recently, lately, immediately, suddenly, gradually.
+
+\paragraph{Gold-token and context handling.}
+Target-position eligibility is looked up from the clean gold/original
+token ID, never the corrupted input. The same category therefore
+applies whether an MLM-selected token is replaced with \texttt{[MASK]},
+a random token, or left unchanged. The Syntagmatic context set excludes
+padding, \texttt{[CLS]}, \texttt{[SEP]}, \texttt{[MASK]}, the target
+itself, and every other MLM-selected position. Context embeddings are
+then gathered from the original uncorrupted token IDs. Subword entries
+are classified independently; the code performs no word reconstruction.
+
+\section{Reproduction Mapping}
+\label{app:reproduction}
+
+Table~\ref{tab:model-mapping} maps each paper name to the exact seed-0
+model directory used in the main comparison. All reported final scores
+use the \texttt{chck\_100M} checkpoint inside that directory.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lp{0.70\textwidth}}
+\toprule
+Paper name & Exact model directory \\
+\midrule
+Standard MLM & \texttt{bb26\_claim\_clean\_s0} \\
+Syntagmatic & \texttt{bb26\_claim\_comp\_entguard\_s0} \\
+Paradigmatic & \texttt{bb26\_claim\_agg\_synonly\_s0} \\
+Relay Joint & \texttt{bb26\_claim\_compagg\_v22\_v15\_relay\_synp050\_synkeep010\_s0} \\
+\bottomrule
+\end{tabular}
+\caption{Paper-to-directory mapping for the seed-0 comparison.}
+\label{tab:model-mapping}
+\end{table}
+
+Each model directory contains its saved training command, trainer
+copy, and claim manifest. Evaluation results use the BabyLM evaluation
+pipeline at commit
+\texttt{3d57ddc8c40ee795c0b5e41b3a20251a9457a593}. The local evaluation
+repository contained uncommitted changes when this version was
+audited, so the hash identifies its HEAD rather than a clean checkout.
+
+Figure~\ref{fig:reading-aoa} is generated from the official checkpoint
+results for the four directories above. Figure
+\ref{fig:contextual-alignment} uses the exact 100M checkpoints and the
+new seed-0 CSVs listed in the accompanying v22 analysis directory.
+
+\section{Representation Analyses}
+\label{app:representation-analysis}
+
+\paragraph{Paradigmatic neighborhood probe.}
+The probe uses 2,000 eligible masked syntax-token instances. For each
+instance, the correct candidate is the centroid of the eight nearest
+input-embedding neighbors of the gold token. Sixty-three centroids from
+other syntax-token IDs form controls. Alignment margin measures the
+cosine advantage of the correct target over controls; MRR is its
+reciprocal rank. Table~\ref{tab:para-probe} reports paired item-level
+differences from the exact seed-0 Standard MLM checkpoint. Full-384 is
+the primary comparison; equal-width slices are diagnostic coordinate
+views.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+Method / representation & Margin $\Delta$ & MRR $\Delta$ \\
+\midrule
+Paradigmatic / Full-384 & .024213 & .084507 \\
+Relay Joint / Full-384 & .047681 & .144508 \\
+Relay Joint / Slice 1 (0--127) & .125988 & .218807 \\
+Relay Joint / Slice 2 (128--255) & -.082908 & -.046663 \\
+Relay Joint / Slice 3 (256--383) & .087723 & .112787 \\
+\bottomrule
+\end{tabular}
+\caption{Seed-0 neighborhood-alignment differences from Standard MLM.
+No cross-seed standard deviation or significance test is available.}
+\label{tab:para-probe}
+\end{table}
+
+The final 128 coordinates are the fixed Paradigmatic training slice
+for Relay Joint. Their positive diagnostic values show alignment in
+that designated coordinate range, but do not imply that the model
+discovered an intrinsic linguistic subspace.
+
+\paragraph{Syntagmatic diagnostics.}
+Attention is ranked over SentencePiece positions before word-level
+mapping. Selected subwords are mapped to Universal Dependencies words,
+with duplicate words collapsed. Recall@8 is the fraction of gold direct
+dependency-neighbor words recovered; Precision@8 is the fraction of
+unique mapped selected words that are direct dependency neighbors. For
+context removal, the same selected token positions are zeroed in the
+input to the final Transformer layer. A matched control removes the
+same number of random non-special, non-target positions. Tables
+\ref{tab:dependency} and~\ref{tab:context-removal} include only the
+current Standard MLM and Syntagmatic runs.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{llrr}
+\toprule
+Method & Seed / summary & Recall@8 & Precision@8 \\
+\midrule
+Standard MLM & 0 / 1 / 42 & .8707 / .8806 / .8699 & .2997 / .3003 / .2970 \\
+ & Mean $\pm$ SD & $.8737\pm.0059$ & $.2990\pm.0018$ \\
+Syntagmatic & 0 / 1 / 42 & .8750 / .8759 / .8772 & .2999 / .2979 / .2987 \\
+ & Mean $\pm$ SD & $.8760\pm.0011$ & $.2988\pm.0010$ \\
+\bottomrule
+\end{tabular}
+\caption{Dependency alignment by seed and sample mean $\pm$ SD.}
+\label{tab:dependency}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{llrrr}
+\toprule
+Method & Seed / summary & Attended & Matched & Difference \\
+\midrule
+Standard MLM & 0 / 1 / 42 & 1.6525 / 1.6137 / .9038 & -.0447 / .1678 / -.0039 & 1.6972 / 1.4459 / .9077 \\
+ & Mean $\pm$ SD & $1.3900\pm.4215$ & $.0397\pm.1128$ & $1.3503\pm.4034$ \\
+Syntagmatic & 0 / 1 / 42 & 1.8058 / 2.1002 / .7960 & -.0438 / .0159 / -.0082 & 1.8496 / 2.0842 / .8042 \\
+ & Mean $\pm$ SD & $1.5673\pm.6840$ & $-.0120\pm.0300$ & $1.5793\pm.6814$ \\
+\bottomrule
+\end{tabular}
+\caption{Gold-token NLL increase after context removal, by seed and sample mean $\pm$ SD. Difference is attended minus matched.}
+\label{tab:context-removal}
+\end{table}

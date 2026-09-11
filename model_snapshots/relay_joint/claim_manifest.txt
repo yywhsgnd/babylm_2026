@@ -1,0 +1,12 @@
+model=bb26_claim_compagg_v22_v15_relay_synp050_synkeep010_s0
+seed=0
+mechanism=v22_v15_relay_synp050_synkeep010
+trainer=pretraining_progress/train_clean_mlm_rae_v7_compagg_v14_subspace_route.py
+recipe=claim_compagg_v15_fixed_subspace_ewok_recovery_2026
+syn_progress=0.0920386562
+early_syntax_para_progress=0.1840773125
+mid_syntax_para_progress=0.2500000000
+late_syntax_para_progress=0.6000000000
+content_para_progress=0.6902899227
+checkpoint=chck_100M
+finished_at=Thu Jul  9 00:28:07 CST 2026
